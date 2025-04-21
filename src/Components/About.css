@@ -1,0 +1,124 @@
+
+.about-container {
+  padding: 4rem 1.5rem;
+  background-color:#F0EAD6;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  color: #1f1f1f;
+}
+
+.about-wrapper {
+  max-width: 900px;
+  margin: auto;
+  background: #ffffff;
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+.brand-name {
+  color: #4b7bec;
+}
+
+.about-wrapper h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  font-weight: bold;
+}
+
+.intro {
+  font-size: 1.1rem;
+  text-align: center;
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+}
+
+.about-section {
+  margin-bottom: 2.5rem;
+}
+
+.about-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+  border-left: 4px solid #4b7bec;
+  padding-left: 0.6rem;
+}
+
+.about-section p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #444;
+}
+
+.about-section ul {
+  padding-left: 1.2rem;
+  margin-top: 0.5rem;
+}
+
+.about-section ul li {
+  margin-bottom: 0.7rem;
+  font-size: 1rem;
+  color: #444;
+  line-height: 1.5;
+}
+
+.call-to-action {
+  background: #f0f4ff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border-left: 6px solid #4b7bec;
+}
+
+.call-to-action a {
+  color: #4b7bec;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.call-to-action a:hover {
+  text-decoration: underline;
+}
+
+.about-section em {
+  color: #555;
+}
+
+.about-section strong {
+  color: #000;
+}
+
+.about-section.disclaimer {
+  background: #fff3cd;
+  padding: 1.2rem;
+  border-radius: 8px;
+  border-left: 5px solid #ffc107;
+  color: #856404;
+}
+
+.about-footer {
+  text-align: center;
+  margin-top: 3rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #4b7bec;
+}
+
+/* Responsive Tweaks */
+@media (max-width: 768px) {
+  .about-wrapper {
+    padding: 2rem 1.2rem;
+  }
+
+  .about-wrapper h1 {
+    font-size: 2rem;
+  }
+
+  .about-section h2 {
+    font-size: 1.3rem;
+  }
+
+  .intro {
+    font-size: 1rem;
+  }
+}

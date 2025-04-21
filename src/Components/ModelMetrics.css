@@ -1,0 +1,88 @@
+/* Container styles */
+.metrics-container {
+  padding: 2.5rem;
+  background-color: #f9fafe;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  color: #2c3e50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Headings */
+.metrics-container h2 {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.metrics-container h3 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #333;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Chart containers */
+.chart-container {
+  width: 100%;
+  max-width: 850px;
+  height: 420px;
+  background: #fff;
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07);
+}
+
+.doughnut-chart {
+  height: 360px;
+}
+
+/* Loading and error messages */
+.loading-message,
+.error-message {
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.loading-message {
+  color: #2980b9;
+}
+
+.error-message {
+  color: #e74c3c;
+  background-color: #fdecea;
+  border: 1px solid #f5c6cb;
+  padding: 1.2rem;
+  border-radius: 10px;
+  max-width: 600px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .metrics-container h2 {
+    font-size: 2.25rem;
+  }
+
+  .metrics-container h3 {
+    font-size: 1.75rem;
+  }
+
+  .chart-container {
+    padding: 1rem;
+    height: auto;
+  }
+
+  .loading-message,
+  .error-message {
+    font-size: 1.2rem;
+  }
+}
