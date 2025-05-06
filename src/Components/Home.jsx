@@ -1,8 +1,26 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./Home.css";
 
 const Home = ({ onNavigate, user }) => {
   const displayName = user?.displayName || user?.email?.split("@")[0] || "User";
+  const [metrics, setMetrics] = useState(null);
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/metrics");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setMetrics(data);
+      } catch (error) {
+        console.error("Error fetching metrics:", error);
+      }
+    };
+
+    fetchMetrics();
+  }, []);
 
   return (
     <div className="home-container">
@@ -57,16 +75,16 @@ const Home = ({ onNavigate, user }) => {
         <h2>Project Statistics</h2>
         <div className="stat-grid">
           <div>
-            <h3>95%+</h3>
+            <h3>{metrics ? `${(metrics.accuracy * 100).toFixed(1)}%` : '95%+'}</h3>
             <p>Model Accuracy</p>
           </div>
           <div>
-            <h3>500+</h3>
+            <h3>{metrics ? `${metrics.confusion_matrix.tn + metrics.confusion_matrix.fp + metrics.confusion_matrix.fn + metrics.confusion_matrix.tp}+` : '500+'}</h3>
             <p>Test Data Records Used</p>
           </div>
           <div>
-            <h3>100%</h3>
-            <p>Mobile Friendly UI</p>
+            <h3>{metrics ? `${(metrics.specificity * 100).toFixed(1)}%` : '100%'}</h3>
+            <p>Specificity Rate</p>
           </div>
         </div>
       </section>

@@ -21,23 +21,84 @@ const PredictionForm = () => {
     smoking_status: "",
   });
 
-  const [prediction, setPrediction] = useState(null);
+  const [prediction, setPrediction] = useState(() => {
+    // Initialize prediction from localStorage if available
+    const savedPrediction = localStorage.getItem('strokePrediction');
+    return savedPrediction ? JSON.parse(savedPrediction) : null;
+  });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
+
+  const validateNumericalInput = (name, value) => {
+    const numValue = parseFloat(value);
+    switch (name) {
+      case "age":
+        return numValue >= 0 && numValue <= 120;
+      case "avg_glucose_level":
+        return numValue >= 50 && numValue <= 300;
+      case "bmi":
+        return numValue >= 10 && numValue <= 50;
+      default:
+        return true;
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Clear validation error when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
 
   const validateForm = () => {
-    return Object.values(formData).every((value) => value !== "");
+    const errors = {};
+    let isValid = true;
+
+    // Check for empty fields
+    Object.entries(formData).forEach(([key, value]) => {
+      if (!value) {
+        errors[key] = "This field is required";
+        isValid = false;
+      }
+    });
+
+    // Validate numerical inputs
+    if (formData.age && !validateNumericalInput("age", formData.age)) {
+      errors.age = "Age must be between 0 and 120";
+      isValid = false;
+    }
+    if (formData.avg_glucose_level && !validateNumericalInput("avg_glucose_level", formData.avg_glucose_level)) {
+      errors.avg_glucose_level = "Glucose level must be between 50 and 300 mg/dL";
+      isValid = false;
+    }
+    if (formData.bmi && !validateNumericalInput("bmi", formData.bmi)) {
+      errors.bmi = "BMI must be between 10 and 50";
+      isValid = false;
+    }
+
+    setValidationErrors(errors);
+    return isValid;
+  };
+
+  const getRiskFactors = (data) => {
+    const factors = [];
+    if (parseInt(data.age) > 60) factors.push("Age above 60");
+    if (parseInt(data.hypertension) === 1) factors.push("Hypertension");
+    if (parseInt(data.heart_disease) === 1) factors.push("Heart Disease");
+    if (parseFloat(data.avg_glucose_level) > 140) factors.push("High Glucose Level");
+    if (parseFloat(data.bmi) > 30) factors.push("High BMI");
+    if (data.smoking_status === "smokes") factors.push("Current Smoking");
+    return factors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
-      setErrorMsg("Please fill in all fields.");
+      setErrorMsg("Please correct the errors in the form.");
       return;
     }
 
@@ -52,8 +113,30 @@ const PredictionForm = () => {
         body: JSON.stringify(formData),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      setPrediction(data);
+      
+      // Calculate additional metrics
+      const riskFactors = getRiskFactors(formData);
+      const riskScore = parseFloat(data.confidence);
+      
+      // Enhanced prediction object with more precise data
+      const enhancedPrediction = {
+        ...data,
+        riskFactors,
+        riskScore,
+        confidence: parseFloat(riskScore.toFixed(2)),
+        riskCategory: data.risk_category,
+        timestamp: new Date().toISOString(),
+        inputData: { ...formData }
+      };
+
+      // Save prediction to localStorage
+      localStorage.setItem('strokePrediction', JSON.stringify(enhancedPrediction));
+      setPrediction(enhancedPrediction);
 
       // Save prediction to Firestore if user is logged in
       try {
@@ -63,10 +146,7 @@ const PredictionForm = () => {
           const timestamp = new Date();
           
           await setDoc(userHistoryRef, {
-            lastPrediction: {
-              ...data,
-              timestamp: timestamp.toISOString()
-            }
+            lastPrediction: enhancedPrediction
           }, { merge: true });
       
           const historyRef = doc(
@@ -76,32 +156,50 @@ const PredictionForm = () => {
             "history",
             timestamp.getTime().toString()
           );
-          await setDoc(historyRef, {
-            ...formData,
-            ...data,
-            timestamp: timestamp.toISOString()
-          });
+          await setDoc(historyRef, enhancedPrediction);
         }
       } catch (firestoreError) {
         console.error("Firestore write error:", firestoreError);
       }
       
+    } catch (error) {
+      console.error("Prediction error:", error);
+      setErrorMsg("Failed to get prediction. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Data for Charts
-  const riskData = [
-    { name: "Confidence", value: prediction ? prediction.confidence : 0 },
-    { name: "Risk Level", value: prediction ? (prediction.result ? 75 : 25) : 0 },
-  ];
+  // Add a function to clear prediction
+  const clearPrediction = () => {
+    localStorage.removeItem('strokePrediction');
+    setPrediction(null);
+  };
 
-  const factorsData = [
-    { name: "Age", value: formData.age ? parseInt(formData.age) : 0 },
-    { name: "Glucose", value: formData.avg_glucose_level ? parseFloat(formData.avg_glucose_level) : 0 },
-    { name: "BMI", value: formData.bmi ? parseFloat(formData.bmi) : 0 },
-  ];
+  // Enhanced data for Charts with descriptions
+  const riskData = prediction ? [
+    { 
+      name: "Confidence", 
+      value: prediction.confidence,
+      description: "Model's confidence in the prediction"
+    },
+    { 
+      name: "Risk Level", 
+      value: prediction.result ? 75 : 25,
+      description: "Overall stroke risk assessment"
+    },
+    { 
+      name: "Risk Factors", 
+      value: prediction.riskFactors.length * 10,
+      description: "Number of identified risk factors"
+    }
+  ] : [];
+
+  const factorsData = prediction ? [
+    { name: "Age", value: parseInt(prediction.inputData.age) },
+    { name: "Glucose", value: parseFloat(prediction.inputData.avg_glucose_level) },
+    { name: "BMI", value: parseFloat(prediction.inputData.bmi) }
+  ] : [];
 
   return (
     <div className="prediction-container">
@@ -116,12 +214,19 @@ const PredictionForm = () => {
             <div className="form-grid">
               <div className="form-group">
                 <label htmlFor="gender">Gender</label>
-                <select id="gender" name="gender" value={formData.gender} onChange={handleChange}>
+                <select 
+                  id="gender" 
+                  name="gender" 
+                  value={formData.gender} 
+                  onChange={handleChange}
+                  className={validationErrors.gender ? "error" : ""}
+                >
                   <option value="">Select Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
                 </select>
+                {validationErrors.gender && <span className="error-message">{validationErrors.gender}</span>}
               </div>
 
               <div className="form-group">
@@ -135,7 +240,9 @@ const PredictionForm = () => {
                   onChange={handleChange}
                   min="0"
                   max="120"
+                  className={validationErrors.age ? "error" : ""}
                 />
+                {validationErrors.age && <span className="error-message">{validationErrors.age}</span>}
               </div>
 
               <div className="form-group">
@@ -187,7 +294,7 @@ const PredictionForm = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="avg_glucose_level">Glucose Level</label>
+                <label htmlFor="avg_glucose_level">Glucose Level (mg/dL)</label>
                 <input
                   type="number"
                   id="avg_glucose_level"
@@ -195,12 +302,16 @@ const PredictionForm = () => {
                   placeholder="Average Glucose Level"
                   value={formData.avg_glucose_level}
                   onChange={handleChange}
-                  min="0"
+                  min="50"
+                  max="300"
+                  step="0.1"
+                  className={validationErrors.avg_glucose_level ? "error" : ""}
                 />
+                {validationErrors.avg_glucose_level && <span className="error-message">{validationErrors.avg_glucose_level}</span>}
               </div>
 
               <div className="form-group">
-                <label htmlFor="bmi">BMI</label>
+                <label htmlFor="bmi">BMI (kg/m²)</label>
                 <input
                   type="number"
                   id="bmi"
@@ -208,9 +319,12 @@ const PredictionForm = () => {
                   placeholder="Body Mass Index"
                   value={formData.bmi}
                   onChange={handleChange}
-                  min="0"
+                  min="10"
+                  max="50"
                   step="0.1"
+                  className={validationErrors.bmi ? "error" : ""}
                 />
+                {validationErrors.bmi && <span className="error-message">{validationErrors.bmi}</span>}
               </div>
 
               <div className="form-group">
@@ -231,33 +345,91 @@ const PredictionForm = () => {
               <button type="submit" className="submit-button" disabled={loading}>
                 {loading ? "Analyzing..." : "Predict Stroke Risk"}
               </button>
+              {prediction && (
+                <button 
+                  type="button" 
+                  className="clear-button" 
+                  onClick={clearPrediction}
+                >
+                  Clear Results
+                </button>
+              )}
             </div>
           </form>
         </div>
 
         {prediction && (
           <div className="results-section">
-            <div className="result-header">
-              <div className={`result-status ${prediction.result === 1 ? "high-risk" : "low-risk"}`}>
-                <span className="result-icon">
-                  {prediction.result === 1 ? "⚠️" : "✅"}
-                </span>
-                <h2>
-                  {prediction.result === 1
-                    ? "Stroke Risk Detected"
-                    : "No Significant Stroke Risk"}
-                </h2>
+            <div className="result-container">
+              <div className="result-header">
+                <h2>Prediction Result</h2>
+                <div className={`result-badge ${prediction.result === 1 ? 'high-risk' : 'low-risk'}`}>
+                  {prediction.result === 1 ? 'High Risk' : 'Low Risk'}
+                </div>
               </div>
               
-              <div className="result-stats">
-                <div className="stat-item">
-                  <span className="stat-label">Confidence:</span>
-                  <span className="stat-value">{prediction.confidence}%</span>
+              <div className="result-details">
+                <div className="confidence-section">
+                  <h3>Confidence Level</h3>
+                  <div className="confidence-bar">
+                    <div 
+                      className="confidence-fill"
+                      style={{ width: `${prediction.confidence}%` }}
+                    />
+                  </div>
+                  <p className="confidence-text">
+                    {prediction.confidence}% confidence
+                    {prediction.confidence_interval && (
+                      <span className="confidence-interval">
+                        (95% CI: {prediction.confidence_interval.lower}% - {prediction.confidence_interval.upper}%)
+                      </span>
+                    )}
+                  </p>
                 </div>
-                <div className="stat-item">
-                  <span className="stat-label">Risk Category:</span>
-                  <span className="stat-value">{prediction.risk_category}</span>
+
+                <div className="risk-category-section">
+                  <h3>Risk Assessment</h3>
+                  {prediction.riskCategory && (
+                    <div className={`risk-category ${prediction.riskCategory.category?.toLowerCase()}`}>
+                      <h4>{prediction.riskCategory.category || 'Unknown'}</h4>
+                      <p>{prediction.riskCategory.description || 'No description available'}</p>
+                      <p className="recommendation">{prediction.riskCategory.recommendation || 'No recommendation available'}</p>
+                    </div>
+                  )}
                 </div>
+
+                {prediction.riskFactors && prediction.riskFactors.length > 0 && (
+                  <div className="risk-factors-section">
+                    <h3>Identified Risk Factors</h3>
+                    <ul className="risk-factors-list">
+                      {prediction.riskFactors.map((factor, index) => (
+                        <li key={index} className="risk-factor-item">
+                          {factor}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {prediction.risk_scores && Object.keys(prediction.risk_scores).length > 0 && (
+                  <div className="risk-scores-section">
+                    <h3>Risk Factor Contributions</h3>
+                    <div className="risk-scores-grid">
+                      {Object.entries(prediction.risk_scores).map(([factor, score]) => (
+                        <div key={factor} className="risk-score-item">
+                          <span className="factor-name">{factor.replace('_', ' ').toUpperCase()}</span>
+                          <div className="score-bar">
+                            <div 
+                              className="score-fill"
+                              style={{ width: `${score * 100}%` }}
+                            />
+                          </div>
+                          <span className="score-value">{Math.round(score * 100)}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -269,9 +441,26 @@ const PredictionForm = () => {
                     <BarChart data={factorsData} barSize={40}>
                       <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                       <YAxis />
-                      <Tooltip />
+                      <Tooltip 
+                        formatter={(value) => value.toFixed(2)}
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          border: '1px solid #ccc',
+                          borderRadius: '4px',
+                          padding: '8px'
+                        }}
+                      />
                       <Legend />
-                      <Bar dataKey="value" fill="url(#colorUv)" radius={[8, 8, 0, 0]} />
+                      <Bar 
+                        dataKey="value" 
+                        fill="url(#colorUv)" 
+                        radius={[8, 8, 0, 0]}
+                        label={{ 
+                          position: 'top',
+                          fill: '#666',
+                          fontSize: 12
+                        }}
+                      />
                       <defs>
                         <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#4CAF50" stopOpacity={0.9} />
@@ -285,28 +474,49 @@ const PredictionForm = () => {
 
               <div className="chart-box">
                 <h3>🌀 Risk Breakdown</h3>
+                <div className="chart-description">
+                  <p>This chart shows the distribution of different risk indicators:</p>
+                  <ul>
+                    <li><strong>Confidence:</strong> How certain the model is about its prediction</li>
+                    <li><strong>Risk Level:</strong> Overall assessment of stroke risk (higher percentage indicates higher risk)</li>
+                    <li><strong>Risk Factors:</strong> Number of identified risk factors present (each factor contributes 10%)</li>
+                  </ul>
+                </div>
                 <div className="chart-wrapper">
-                <ResponsiveContainer width="100%" height={250}>
-                      <PieChart>
-                        <Pie
-                          data={riskData}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          label={({ name, value }) => `${name}: ${Math.round(value)}%`}
-                        >
-                          {riskData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => `${Math.round(value)}%`} />
-                        <Legend />
-                      </PieChart>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={riskData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        label={({ name, value }) => `${name}: ${value.toFixed(2)}%`}
+                      >
+                        {riskData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value) => `${value.toFixed(2)}%`}
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="custom-tooltip">
+                                <p className="tooltip-label">{data.name}</p>
+                                <p className="tooltip-value">{data.value.toFixed(2)}%</p>
+                                <p className="tooltip-description">{data.description}</p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Legend />
+                    </PieChart>
                   </ResponsiveContainer>
-
-
                 </div>
               </div>
             </div>

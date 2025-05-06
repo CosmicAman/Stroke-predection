@@ -12,16 +12,12 @@ import "./History.css";
 
 // Charts
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
   Legend,
+  Tooltip,
+  ResponsiveContainer,
 } from "recharts";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
@@ -103,15 +99,18 @@ const History = ({ user }) => {
       ) : (
         <div className="history-grid">
           {history.map((entry) => {
-            const factorsData = [
-              { name: "Age", value: parseFloat(entry.age) },
-              { name: "Glucose", value: parseFloat(entry.avg_glucose_level) },
-              { name: "BMI", value: parseFloat(entry.bmi) },
-            ];
-
+            const confidence = parseFloat(entry.confidence) || 0;
             const riskData = [
-              { name: "Confidence", value: parseFloat(entry.confidence) },
-              { name: "Risk Level", value: entry.result === 1 ? 75 : 25 },
+              { 
+                name: "Confidence", 
+                value: confidence,
+                fill: "#0088FE"
+              },
+              { 
+                name: "Risk Level", 
+                value: entry.result === 1 ? 75 : 25,
+                fill: entry.result === 1 ? "#FF8042" : "#00C49F"
+              }
             ];
 
             return (
@@ -128,40 +127,57 @@ const History = ({ user }) => {
                 </div>
 
                 <p><strong>Risk:</strong> {entry.result === 1 ? "Stroke Risk ⚠️" : "No Risk ✅"}</p>
-                <p><strong>Confidence:</strong> {entry.confidence}%</p>
-                <p><strong>Category:</strong> {entry.risk_category}</p>
-
-                <div className="mini-chart">
-                  <h4>Health Factors</h4>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={factorsData} barSize={35}>
-                      <XAxis dataKey="name" fontSize={12} />
-                      <YAxis fontSize={12} />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#4CAF50" radius={[8, 8, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                <p><strong>Confidence:</strong> {confidence}%</p>
+                {entry.risk_category && (
+                  <div className="risk-category-info">
+                    <p><strong>Category:</strong> {entry.risk_category.category || 'Unknown'}</p>
+                    <p><strong>Description:</strong> {entry.risk_category.description || 'No description available'}</p>
+                    <p><strong>Recommendation:</strong> {entry.risk_category.recommendation || 'No recommendation available'}</p>
+                  </div>
+                )}
 
                 <div className="mini-chart">
                   <h4>Risk Breakdown</h4>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <PieChart>
+                  <ResponsiveContainer width="100%" height={350}>
+                    <PieChart margin={{ top: 20, right: 50, left: 50, bottom: 60 }}>
                       <Pie
                         data={riskData}
                         dataKey="value"
                         nameKey="name"
                         cx="50%"
-                        cy="50%"
-                        outerRadius={60}
-                        label
+                        cy="45%"
+                        outerRadius={70}
+                        innerRadius={25}
+                        paddingAngle={2}
+                        label={({ name, value }) => {
+                          const label = `${name}: ${value}%`;
+                          return label.length > 15 ? `${name}\n${value}%` : label;
+                        }}
+                        labelLine={{ stroke: '#666', strokeWidth: 1 }}
                       >
                         {riskData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
                       </Pie>
-                      <Tooltip />
-                      <Legend verticalAlign="bottom" height={36} />
+                      <Tooltip 
+                        formatter={(value) => [`${value}%`, 'Value']}
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          padding: '8px'
+                        }}
+                      />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        height={36}
+                        layout="horizontal"
+                        align="center"
+                        wrapperStyle={{
+                          paddingTop: '20px',
+                          fontSize: '12px'
+                        }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>

@@ -9,14 +9,14 @@ const About = () => {
 
         {/* Introduction */}
         <p className="intro">
-          <strong>StrokePredict</strong> is a powerful AI-driven platform designed to help individuals assess their risk of stroke using personalized health data and intelligent machine learning algorithms. Our mission is to empower proactive health decisions and increase stroke awareness globally.
+          <strong>StrokePredict</strong> is an advanced AI-powered platform that provides personalized stroke risk assessment using machine learning. Our system analyzes multiple health factors including age, hypertension, heart disease, glucose levels, BMI, and smoking status to deliver accurate risk predictions with detailed insights.
         </p>
 
         {/* Mission & Vision */}
         <div className="about-section">
           <h2>🚀 Our Mission & Vision</h2>
           <p>
-            Our mission is to enable early detection of stroke risk by providing accessible and accurate risk assessments through technology. We envision a world where individuals are equipped with insights to prevent critical health conditions before they occur.
+            Our mission is to provide accessible and accurate stroke risk assessment through advanced machine learning technology. We aim to help individuals understand their health risks and make informed decisions about their well-being.
           </p>
         </div>
 
@@ -56,50 +56,88 @@ const About = () => {
           </p>
         </div>
 
-        {/* Testimonials */}
+        {/* How It Works */}
         <div className="about-section">
-          <h2>🗣️ What Users Are Saying</h2>
-          <p><em>“StrokePredict gave me peace of mind and helped me understand my risk. It’s easy, fast, and reliable.”</em> — <strong>Aman T.</strong></p>
-          <p><em>“This tool made me rethink my health habits. The visual feedback is super helpful!”</em> — <strong>Sarah K.</strong></p>
+          <h2>🔬 How It Works</h2>
+          <ul>
+            <li><strong>Data Input:</strong> Enter your health metrics including age, hypertension status, heart disease history, glucose levels, BMI, and smoking status.</li>
+            <li><strong>Advanced Analysis:</strong> Our Random Forest model processes your data through multiple health risk factors.</li>
+            <li><strong>Risk Assessment:</strong> Get a detailed risk prediction with confidence intervals and specific risk factors identified.</li>
+            <li><strong>Personalized Insights:</strong> Receive a comprehensive breakdown of your risk factors and their individual contributions.</li>
+          </ul>
+        </div>
+
+        {/* Risk Categories */}
+        <div className="about-section">
+          <h2>📊 Risk Categories</h2>
+          <ul>
+            <li><strong>Very Low Risk:</strong> Minimal stroke risk detected - Maintain healthy lifestyle</li>
+            <li><strong>Low Risk:</strong> Slight stroke risk detected - Monitor health indicators regularly</li>
+            <li><strong>Medium Risk:</strong> Moderate stroke risk detected - Regular medical check-ups recommended</li>
+            <li><strong>High Risk:</strong> Significant stroke risk detected - Immediate medical consultation recommended</li>
+          </ul>
+        </div>
+
+        {/* Key Features */}
+        <div className="about-section">
+          <h2>🌟 Key Features</h2>
+          <ul>
+            <li><strong>Comprehensive Analysis:</strong> Evaluates multiple health factors including age, hypertension, heart disease, glucose levels, BMI, and smoking status</li>
+            <li><strong>Confidence Intervals:</strong> Provides 95% confidence intervals for predictions</li>
+            <li><strong>Risk Factor Breakdown:</strong> Detailed explanation of individual risk factors and their contributions</li>
+            <li><strong>Secure Authentication:</strong> Protected user accounts with Firebase Authentication</li>
+            <li><strong>History Tracking:</strong> Save and monitor your risk assessments over time</li>
+          </ul>
+        </div>
+
+        {/* Tech Stack */}
+        <div className="about-section">
+          <h2>🛠️ Technical Implementation</h2>
+          <p>
+            Built with modern technologies including:
+          </p>
+          <ul>
+            <li><strong>Frontend:</strong> React.js with responsive design</li>
+            <li><strong>Backend:</strong> Flask API with advanced machine learning integration</li>
+            <li><strong>Authentication:</strong> Firebase Authentication for secure user management</li>
+            <li><strong>Machine Learning:</strong> Random Forest model with SMOTE for balanced predictions</li>
+            <li><strong>Data Processing:</strong> Advanced feature engineering and data normalization</li>
+          </ul>
+        </div>
+
+        {/* Model Performance */}
+        <div className="about-section">
+          <h2>📈 Model Performance</h2>
+          <p>
+            Our machine learning model is trained on comprehensive stroke data and provides:
+          </p>
+          <ul>
+            <li>High accuracy in risk prediction</li>
+            <li>Balanced sensitivity and specificity</li>
+            <li>Detailed feature importance analysis</li>
+            <li>ROC curve analysis for model evaluation</li>
+          </ul>
         </div>
 
         {/* Call to Action */}
         <div className="about-section call-to-action">
-          <h2>📬 Ready to Take Control of Your Health?</h2>
+          <h2>📬 Ready to Assess Your Risk?</h2>
           <p>
-            Start assessing your stroke risk today. <a href="/predict">Make your first prediction</a> or <a href="/signup">create an account</a> to save your history. Your health is your wealth—let's protect it together.
-          </p>
-        </div>
-
-        {/* How It Works + Tech Stack */}
-        <div className="about-section">
-          <h2>🔬 How It Works</h2>
-          <ul>
-            <li>Secure login with Firebase Authentication.</li>
-            <li>User enters data like age, glucose level, and BMI.</li>
-            <li>A trained Random Forest model calculates the stroke risk.</li>
-            <li>Predictions are visualized and stored for future reference.</li>
-          </ul>
-        </div>
-
-        <div className="about-section">
-          <h2>🛠️ Tech Stack</h2>
-          <p>
-            Built with <strong>React</strong> (frontend), <strong>Flask</strong> (backend), and integrated with <strong>Firebase</strong> for authentication and history tracking. The model uses real-world stroke data sourced from <em>Kaggle</em>.
+            Start your personalized stroke risk assessment today. <a href="/predict">Make your first prediction</a> or <a href="/signup">create an account</a> to track your health journey.
           </p>
         </div>
 
         {/* Disclaimer */}
         <div className="about-section disclaimer">
-          <h2>⚠️ Disclaimer</h2>
+          <h2>⚠️ Important Disclaimer</h2>
           <p>
-            StrokePredict is an informational tool and does not replace professional medical advice or diagnosis. Always consult with a qualified healthcare provider for health-related concerns.
+            StrokePredict is designed as an informational tool and should not replace professional medical advice or diagnosis. Always consult with qualified healthcare providers for medical decisions and concerns.
           </p>
         </div>
 
         {/* Footer Tagline */}
         <div className="about-footer">
-          <p><strong>Stay informed. Stay proactive. Prioritize your health. 💙</strong></p>
+          <p><strong>Empowering health decisions through technology. 💙</strong></p>
         </div>
       </div>
     </div>
