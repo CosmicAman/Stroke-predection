@@ -4,12 +4,12 @@ import { getFirestore, doc, writeBatch } from "firebase/firestore";
 
 // ✅ Firebase project config
 const firebaseConfig = {
-  apiKey: "AIzaSyAr-INipZHGZRekfheNxjswKqatUdQQ1oQ",
-  authDomain: "stroke-b6233.firebaseapp.com",
-  projectId: "stroke-b6233",
-  storageBucket: "stroke-b6233.firebasestorage.app", 
-  messagingSenderId: "823807850190",
-  appId: "1:823807850190:web:b5908651a0005201d3829f"
+  apiKey: "YOUR API KEY",
+  authDomain: "DOMAIN.firebaseapp.com",
+  projectId: "stroke-xxxxx",
+  storageBucket: "stroke-xxxx.firebasestorage.app", 
+  messagingSenderId: "xxxxxxxxxxx",
+  appId: "xxxxxxxxxxxxxxxxxxxxx"
 };
 
 // ✅ Initialize app
