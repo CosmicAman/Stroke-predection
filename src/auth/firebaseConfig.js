@@ -4,7 +4,7 @@ import { getFirestore, doc, writeBatch } from "firebase/firestore";
 
 // ✅ Firebase project config
 const firebaseConfig = {
-  apiKey: "YOUR API KEY",
+  apiKey: "AIzaSyAr-INipZHGZRekfheNxjswKqatUdQQ1oQ",
   authDomain: "DOMAIN.firebaseapp.com",
   projectId: "stroke-xxxxx",
   storageBucket: "stroke-xxxx.firebasestorage.app", 
